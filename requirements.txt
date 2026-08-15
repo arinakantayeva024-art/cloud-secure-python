@@ -1,2 +1,5 @@
 Flask
 gunicorn
+scikit-learn
+matplotlib
+numpy
