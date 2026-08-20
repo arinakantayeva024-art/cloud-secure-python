@@ -28,7 +28,7 @@ st.write(
 # Load dataset for dropdowns
 # =========================
 
-CSV_FILE = "crop_yield.csv"
+CSV_FILE = "yield_df.csv"
 
 if os.path.exists(CSV_FILE):
 
