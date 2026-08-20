@@ -9,7 +9,7 @@ model_path = "crop_yield_model.pkl"
 
 if not os.path.exists(model_path):
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
-    gdown.download(url, model_path, quiet=False, fuzzy=True)
+    gdown.download(url, model_path, quiet=False)
 
 model = joblib.load(model_path)
 # =========================
