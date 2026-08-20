@@ -1,85 +1,150 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import os
 import joblib
-import gdown  
+import os
 
-# Google Drive file ID (Replace with your actual file ID)
-file_id = "1a7paF89c9I5ChaL4SCW_vNlIPAWU6bZl"  # Update with your actual file ID
-model_path = "crop_yield_model.pkl"
+# =========================
+# Load model
+# =========================
 
-# Download model if not already available
-if not os.path.exists(model_path):
-    url = f"https://drive.google.com/uc?id={file_id}"
-    gdown.download(url, model_path, quiet=False)
+MODEL_FILE = "crop_yield_model.pkl"
 
-# Load the trained model
-model = joblib.load(model_path)
+if not os.path.exists(MODEL_FILE):
+    st.error("Model file crop_yield_model.pkl was not found.")
+    st.stop()
 
-# Model performance stats (replace with actual values if available)
-MODEL_R2 = 0.87  # Example R² score
-MODEL_ACC = 0.82  # Example accuracy
+model = joblib.load(MODEL_FILE)
 
-# Streamlit UI
+
+# =========================
+# App configuration
+# =========================
+
+st.set_page_config(
+    page_title="Crop Yield Prediction",
+    page_icon="🌾",
+    layout="centered"
+)
+
 st.title("🌾 Crop Yield Prediction Dashboard")
-st.write("Enter the farm details below to predict crop yield.")
 
-# Show model performance
-with st.expander("ℹ️ Model Performance"):
-    st.write(f"**R² Score:** {MODEL_R2}")
-    st.write(f"**Accuracy:** {MODEL_ACC}")
-
-# User inputs with realistic ranges and zero as default
-temperature = st.number_input(
-    "🌡️ Average Temperature (°C)", min_value=10.0, max_value=45.0, step=0.1, value=10.0,
-    help="Recommended: 10–45°C"
+st.write(
+    "Enter the agricultural and environmental parameters "
+    "to predict crop yield."
 )
+
+
+# =========================
+# Load dataset for dropdowns
+# =========================
+
+CSV_FILE = "crop_yield.csv"
+
+if os.path.exists(CSV_FILE):
+
+    df = pd.read_csv(CSV_FILE)
+
+    if df.columns[0].startswith("Unnamed"):
+        df = df.drop(columns=[df.columns[0]])
+
+    df.columns = df.columns.str.strip()
+
+    areas = sorted(df["Area"].dropna().unique())
+    crops = sorted(df["Item"].dropna().unique())
+
+else:
+    st.error("CSV dataset was not found.")
+    st.stop()
+
+
+# =========================
+# User inputs
+# =========================
+
+st.subheader("🌱 Farm Information")
+
+area = st.selectbox(
+    "📍 Area",
+    areas
+)
+
+crop = st.selectbox(
+    "🌾 Crop",
+    crops
+)
+
+year = st.number_input(
+    "📅 Year",
+    min_value=1990,
+    max_value=2035,
+    value=2025,
+    step=1
+)
+
+
+st.subheader("🌦️ Environmental Conditions")
+
 rainfall = st.number_input(
-    "🌧️ Rainfall (mm/year)", min_value=200.0, max_value=1200.0, step=10.0, value=200.0,
-    help="Recommended: 200–1200 mm/year"
+    "🌧️ Average Rainfall (mm/year)",
+    min_value=0.0,
+    max_value=5000.0,
+    value=1000.0,
+    step=10.0
 )
+
 pesticides = st.number_input(
-    "🧪 Pesticides Used (tonnes)", min_value=0.0, max_value=1000.0, step=0.1, value=0.0
-)
-soil_type = st.selectbox("🌱 Soil Type", ["Sandy", "Loamy", "Clay", "Silt"])
-
-# Additional Inputs
-nitrogen = st.number_input(
-    "💨 Nitrogen Content (%)", min_value=0.0, max_value=100.0, step=0.1, value=0.0
-)
-phosphorus = st.number_input(
-    "🧪 Phosphorus Content (%)", min_value=0.0, max_value=100.0, step=0.1, value=0.0
-)
-potassium = st.number_input(
-    "🧂 Potassium Content (%)", min_value=0.0, max_value=100.0, step=0.1, value=0.0
+    "🧪 Pesticides Used (tonnes)",
+    min_value=0.0,
+    max_value=10000.0,
+    value=100.0,
+    step=1.0
 )
 
-# Only enable Predict button if all required fields are in valid range
-inputs_valid = (
-    10 <= temperature <= 45 and
-    200 <= rainfall <= 1200 and
-    0 <= pesticides <= 1000 and
-    0 <= nitrogen <= 100 and
-    0 <= phosphorus <= 100 and
-    0 <= potassium <= 100
+temperature = st.number_input(
+    "🌡️ Average Temperature (°C)",
+    min_value=-10.0,
+    max_value=50.0,
+    value=20.0,
+    step=0.1
 )
 
-if not inputs_valid:
-    st.warning("Please enter all values within their realistic ranges to enable prediction.")
 
-# Soil type encoding (label encoding; ensure your model was trained this way)
-soil_types = {"Sandy": 0, "Loamy": 1, "Clay": 2, "Silt": 3}
-soil_type_value = soil_types[soil_type]
+# =========================
+# Prediction
+# =========================
 
-# Predict button (disabled if inputs are invalid)
-if st.button("Predict Yield", disabled=not inputs_valid):
-    # Prepare input data
-    input_data = np.array([[temperature, rainfall, pesticides, soil_type_value, nitrogen, phosphorus, potassium]])
-    prediction_hg_ha = model.predict(input_data)[0]  # Output in hg/ha
+if st.button("🌾 Predict Yield", type="primary"):
 
-    # Convert hg/ha to kg/acre
-    prediction_kg_acre = (prediction_hg_ha * 0.1) / 2.47105
+    input_data = pd.DataFrame({
+        "Area": [area],
+        "Item": [crop],
+        "Year": [year],
+        "average_rain_fall_mm_per_year": [rainfall],
+        "pesticides_tonnes": [pesticides],
+        "avg_temp": [temperature]
+    })
 
-    st.success(f"🌾 Predicted Crop Yield: {round(prediction_kg_acre, 2)} kg/acre")
-    st.caption("Rainfall is expected in mm/year. Please verify your inputs.")
+    try:
+
+        prediction_hg_ha = model.predict(input_data)[0]
+
+        prediction_kg_ha = prediction_hg_ha / 10
+
+        prediction_kg_acre = prediction_kg_ha / 2.47105
+
+        st.success(
+            f"🌾 Predicted Crop Yield: "
+            f"{prediction_hg_ha:,.2f} hg/ha"
+        )
+
+        st.info(
+            f"Equivalent to approximately "
+            f"{prediction_kg_ha:,.2f} kg/ha "
+            f"or {prediction_kg_acre:,.2f} kg/acre."
+        )
+
+    except Exception as e:
+
+        st.error(
+            f"Prediction failed: {e}"
+        )
