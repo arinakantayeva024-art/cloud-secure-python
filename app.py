@@ -11,7 +11,7 @@ if not os.path.exists(model_path):
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
     gdown.download(url, model_path, quiet=False)
 
-#model = joblib.load(model_path)
+model = joblib.load(model_path)
 # =========================
 # Load model
 # =========================
