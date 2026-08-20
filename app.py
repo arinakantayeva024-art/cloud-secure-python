@@ -16,7 +16,7 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🌾 Crop Yield Prediction Dashboard")
+st.title("Crop Yield Prediction Dashboard")
 
 st.write(
     "Enter the agricultural and environmental parameters "
@@ -51,20 +51,20 @@ else:
 # User inputs
 # =========================
 
-st.subheader("🌱 Farm Information")
+st.subheader("Farm Information")
 
 area = st.selectbox(
-    "📍 Area",
+    "Area",
     areas
 )
 
 crop = st.selectbox(
-    "🌾 Crop",
+    "Crop's Name",
     crops
 )
 
 year = st.number_input(
-    "📅 Year",
+    "Year",
     min_value=1990,
     max_value=2035,
     value=2025,
@@ -72,10 +72,10 @@ year = st.number_input(
 )
 
 
-st.subheader("🌦️ Environmental Conditions")
+st.subheader("Environmental Conditions")
 
 rainfall = st.number_input(
-    "🌧️ Average Rainfall (mm/year)",
+    "Average Rainfall (mm/year)",
     min_value=0.0,
     max_value=5000.0,
     value=1000.0,
@@ -83,7 +83,7 @@ rainfall = st.number_input(
 )
 
 pesticides = st.number_input(
-    "🧪 Pesticides Used (tonnes)",
+    "Pesticides Used (tonnes)",
     min_value=0.0,
     max_value=10000.0,
     value=100.0,
@@ -91,7 +91,7 @@ pesticides = st.number_input(
 )
 
 temperature = st.number_input(
-    "🌡️ Average Temperature (°C)",
+    "Average Temperature (°C)",
     min_value=-10.0,
     max_value=50.0,
     value=20.0,
@@ -103,7 +103,7 @@ temperature = st.number_input(
 # Prediction
 # =========================
 
-if st.button("🌾 Predict Yield", type="primary"):
+if st.button("Predict Yield", type="primary"):
 
     input_data = pd.DataFrame({
         "Area": [area],
@@ -123,7 +123,7 @@ if st.button("🌾 Predict Yield", type="primary"):
         prediction_kg_acre = prediction_kg_ha / 2.47105
 
         st.success(
-            f"🌾 Predicted Crop Yield: "
+            f"Predicted Crop Yield: "
             f"{prediction_hg_ha:,.2f} hg/ha"
         )
 
