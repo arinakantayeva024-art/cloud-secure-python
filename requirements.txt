@@ -1,5 +1,6 @@
-Flask
-gunicorn
-scikit-learn
-matplotlib
+streamlit
+pandas
 numpy
+scikit-learn
+joblib
+gdown
