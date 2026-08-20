@@ -3,19 +3,8 @@ import pandas as pd
 import joblib
 import os
 import gdown
-
-file_id = "1PjxQ_YSRLV9ZeYH45hwguI_LD-MaKH6l"
 model_path = "crop_yield_model.pkl"
-
-if not os.path.exists(model_path):
-    url = f"https://drive.google.com/uc?export=download&id={file_id}"
-    gdown.download(url, model_path, quiet=False)
-
 model = joblib.load(model_path)
-# =========================
-# Load model
-# =========================
-
 
 # =========================
 # App configuration
